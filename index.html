@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DBT Skills Helper</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 20px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2C3E50;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    /* Homepage styles */
+    .category-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .category-card::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 18px;
+      padding: 3px;
+      background: linear-gradient(135deg, var(--color) 0%, var(--color-light) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.6;
+    }
+
+    .category-card::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--color);
+      border-radius: 50%;
+      opacity: 0.4;
+    }
+
+    .category-card.top-left::after {
+      top: 12px;
+      left: 12px;
+    }
+
+    .category-card.top-right::after {
+      top: 12px;
+      right: 12px;
+    }
+
+    .category-card.bottom-left::after {
+      bottom: 12px;
+      left: 12px;
+    }
+
+    .category-card.bottom-right::after {
+      bottom: 12px;
+      right: 12px;
+    }
+
+    .category-card:active {
+      transform: scale(0.98);
+    }
+
+    .category-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      filter: grayscale(20%);
+    }
+
+    .category-text {
+      font-size: 22px;
+      font-weight: 500;
+      color: #2C3E50;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* Skill selection page styles */
+    .skill-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .skill-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid;
+      border-color: var(--color);
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .skill-card::before,
+    .skill-card::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: var(--color);
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    .skill-card::before {
+      top: 8px;
+      left: 8px;
+    }
+
+    .skill-card::after {
+      bottom: 8px;
+      right: 8px;
+    }
+
+    .skill-card:active {
+      transform: scale(0.98);
+    }
+
+    .skill-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2C3E50;
+      margin-bottom: 8px;
+    }
+
+    .skill-description {
+      font-size: 14px;
+      color: #6B6B6B;
+      line-height: 1.4;
+    }
+
+    /* Back button */
+    .back-button {
+      background: #2C3E50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-button:active {
+      transform: scale(0.96);
+    }
+
+    /* Infographic display */
+    .infographic-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .infographic-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .infographic-container {
+      position: relative;
+      max-width: 100%;
+      max-height: 90vh;
+      animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.3) rotate(5deg);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .infographic-container img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .close-button {
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      background: white;
+      color: #2C3E50;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .close-button:active {
+      transform: scale(0.9);
+    }
+
+    /* Page visibility */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Color variables for categories */
+    .sage {
+      --color: #8B9D83;
+      --color-light: #a8b89f;
+    }
+
+    .blue {
+      --color: #7B9BB0;
+      --color-light: #96b0c4;
+    }
+
+    .mauve {
+      --color: #A8899E;
+      --color-light: #bda1b3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Homepage -->
+    <div id="homepage" class="page active">
+      <h1>How can I help?</h1>
+
+      <div class="category-card sage top-left bottom-right" onclick="showSkills('feeling-off')">
+        <div class="category-icon">🌊</div>
+        <div class="category-text">I don't feel good<br>Something feels off</div>
+      </div>
+
+      <div class="category-card blue top-right bottom-left" onclick="showSkills('racing-thoughts')">
+        <div class="category-icon">🌀</div>
+        <div class="category-text">My thoughts are<br>racing/spiraling</div>
+      </div>
+
+      <div class="category-card mauve top-left bottom-right" onclick="showSkills('stuck-thought')">
+        <div class="category-icon">🔄</div>
+        <div class="category-text">I'm stuck on a<br>thought/urge</div>
+      </div>
+    </div>
+
+    <!-- Feeling Off Skills Page -->
+    <div id="feeling-off" class="page">
+      <button class="back-button" onclick="showHome()">← Back</button>
+      <h1>Choose a skill to try</h1>
+
+      <div class="skill-grid">
+        <div class="skill-card sage" onclick="showInfographic('tipp')">
+          <div class="skill-name">TIPP</div>
+          <div class="skill-description">For when emotions feel really intense</div>
+        </div>
+
+        <div class="skill-card sage" onclick="showInfographic('sensory')">
+          <div class="skill-name">Sensory Soothing</div>
+          <div class="skill-description">Comfort your senses</div>
+        </div>
+
+        <div class="skill-card sage" onclick="showInfographic('distract')">
+          <div class="skill-name">Distract Yourself</div>
+          <div class="skill-description">Give your brain something else to focus on</div>
+        </div>
+
+        <div class="skill-card sage" onclick="showInfographic('opposite')">
+          <div class="skill-name">Opposite Action</div>
+          <div class="skill-description">Do the opposite of what the emotion wants</div>
+        </div>
+
+        <div class="skill-card sage" onclick="showInfographic('mindfulness')">
+          <div class="skill-name">Mindfulness</div>
+          <div class="skill-description">Get present in this moment</div>
+        </div>
+
+        <div class="skill-card sage" onclick="showInfographic('help')">
+          <div class="skill-name">Ask for Help</div>
+          <div class="skill-description">You don't have to do this alone</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Racing Thoughts Skills Page -->
+    <div id="racing-thoughts" class="page">
+      <button class="back-button" onclick="showHome()">← Back</button>
+      <h1>Choose a skill to try</h1>
+
+      <div class="skill-grid">
+        <div class="skill-card blue" onclick="showInfographic('mindfulness')">
+          <div class="skill-name">Mindfulness</div>
+          <div class="skill-description">Get present in this moment</div>
+        </div>
+
+        <div class="skill-card blue" onclick="showInfographic('tipp')">
+          <div class="skill-name">TIPP</div>
+          <div class="skill-description">For when emotions feel really intense</div>
+        </div>
+
+        <div class="skill-card blue" onclick="showInfographic('sensory')">
+          <div class="skill-name">Sensory Soothing</div>
+          <div class="skill-description">Comfort your senses</div>
+        </div>
+
+        <div class="skill-card blue" onclick="showInfographic('thought-observe')">
+          <div class="skill-name">Thought Observation</div>
+          <div class="skill-description">You don't have to believe every thought</div>
+        </div>
+
+        <div class="skill-card blue" onclick="showInfographic('reframe')">
+          <div class="skill-name">Reframe Your Thoughts</div>
+          <div class="skill-description">Different thoughts = different feelings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stuck Thought Skills Page -->
+    <div id="stuck-thought" class="page">
+      <button class="back-button" onclick="showHome()">← Back</button>
+      <h1>Choose a skill to try</h1>
+
+      <div class="skill-grid">
+        <div class="skill-card mauve" onclick="showInfographic('urge-surf')">
+          <div class="skill-name">Urge Surfing</div>
+          <div class="skill-description">Ride the wave without acting on it</div>
+        </div>
+
+        <div class="skill-card mauve" onclick="showInfographic('acceptance')">
+          <div class="skill-name">Acceptance</div>
+          <div class="skill-description">Stop fighting the thought</div>
+        </div>
+
+        <div class="skill-card mauve" onclick="showInfographic('ocd-diffusion')">
+          <div class="skill-name">OCD Diffusion</div>
+          <div class="skill-description">Separate yourself from OCD thoughts</div>
+        </div>
+
+        <div class="skill-card mauve" onclick="showInfographic('erp')">
+          <div class="skill-name">ERP</div>
+          <div class="skill-description">Face the fear without the compulsion</div>
+        </div>
+
+        <div class="skill-card mauve" onclick="showInfographic('mindfulness-ocd')">
+          <div class="skill-name">Mindfulness for OCD</div>
+          <div class="skill-description">Notice without getting pulled in</div>
+        </div>
+
+        <div class="skill-card mauve" onclick="showInfographic('tipp')">
+          <div class="skill-name">TIPP</div>
+          <div class="skill-description">For when emotions feel really intense</div>
+        </div>
+
+        <div class="skill-card mauve" onclick="showInfographic('distract')">
+          <div class="skill-name">Distract Yourself</div>
+          <div class="skill-description">Give your brain something else to focus on</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Infographic Overlay -->
+  <div id="infographic-overlay" class="infographic-overlay" onclick="closeInfographic(event)">
+    <div class="infographic-container">
+      <button class="close-button" onclick="closeInfographic(event)">×</button>
+      <img id="infographic-image" src="" alt="Skill infographic">
+    </div>
+  </div>
+
+  <script>
+    // Skill image mapping
+    const skillImages = {
+      'tipp': 'assets/tipp.png',
+      'sensory': 'assets/sensorysoothing.png',
+      'distract': 'assets/distract.png',
+      'opposite': 'assets/opposite.png',
+      'mindfulness': 'assets/mindfulness.png',
+      'help': 'assets/help.png',
+      'thought-observe': 'assets/thoughtobserve.png',
+      'reframe': 'assets/reframe.png',
+      'urge-surf': 'assets/urgesurf.png',
+      'acceptance': 'assets/acceptance.png',
+      'ocd-diffusion': 'assets/OCDdiffusion.png',
+      'erp': 'assets/erp.png',
+      'mindfulness-ocd': 'assets/mindfulnessocd.png'
+    };
+
+    function showHome() {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      document.getElementById('homepage').classList.add('active');
+    }
+
+    function showSkills(category) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      document.getElementById(category).classList.add('active');
+    }
+
+    function showInfographic(skillId) {
+      const overlay = document.getElementById('infographic-overlay');
+      const image = document.getElementById('infographic-image');
+      image.src = skillImages[skillId];
+      overlay.classList.add('active');
+
+      // Prevent body scroll when overlay is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeInfographic(event) {
+      // Only close if clicking the overlay itself or the close button
+      if (event.target.id === 'infographic-overlay' || event.target.classList.contains('close-button')) {
+        const overlay = document.getElementById('infographic-overlay');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Prevent closing when clicking the image
+    document.querySelector('.infographic-container img').addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  </script>
+</body>
+
+</html>
